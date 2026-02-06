@@ -1,195 +1,148 @@
-# Identix - DID & Verifiable Credentials System
+# IdentiX – Decentralized Identity & Verifiable Credentials Platform
 
-A decentralized identity and verifiable credentials system built on blockchain technology, enabling secure issuance, storage, and verification of digital credentials.
+IdentiX is a blockchain-backed decentralized identity (DID) and verifiable credentials (VC) platform built as part of the IITGN Codeversity Hackathon. The system enables secure, privacy-preserving credential issuance, ownership, and verification for education and workforce use cases.
 
-## 🌟 Features
+IdentiX allows trusted institutions to issue cryptographically verifiable credentials to individuals, who fully own and control them through a digital wallet. Verifiers can instantly validate credentials without contacting the issuing authority, eliminating fraud and manual verification delays.
 
-- **Decentralized Identifiers (DIDs)**: Create and manage W3C compliant DIDs
-- **Verifiable Credentials**: Issue and verify tamper-proof digital credentials
-- **Blockchain Anchoring**: Immutable credential anchoring on Ethereum
-- **Revocation Registry**: On-chain credential revocation management
-- **Standards Compliant**: W3C DID and VC specifications
+---
+
+## 🌟 Core Features (Hackathon MVP)
+
+- Decentralized Identifiers (DIDs) aligned with W3C standards
+- Verifiable Credential issuance and verification
+- Off-chain credential storage with on-chain hash anchoring
+- Blockchain-based credential revocation registry
+- Trusted issuer registry
+- Privacy-first design (no personal data stored on blockchain)
+
+---
+
+## 🧠 System Philosophy
+
+- Blockchain is used strictly as a **trust anchor**
+- Credentials are created and stored **off-chain**
+- Verification is **cryptographic and trustless**
+- Users **own and control** their credentials
+- No centralized identity database
+
+---
 
 ## 📁 Project Structure
 
-```
 identix-did-vc/
-├── backend/              # Express.js backend API
-│   ├── src/
-│   │   ├── config/       # Configuration files
-│   │   ├── routes/       # API routes
-│   │   ├── controllers/  # Request handlers
-│   │   ├── services/     # Business logic
-│   │   ├── crypto/       # Cryptographic utilities
-│   │   ├── middleware/   # Express middleware
-│   │   ├── models/       # Database models
-│   │   └── tests/        # Test files
-│   └── package.json
+├── backend/ # Express.js backend API
+│ ├── src/
+│ │ ├── config/
+│ │ ├── routes/
+│ │ ├── controllers/
+│ │ ├── services/
+│ │ ├── crypto/
+│ │ ├── middleware/
+│ │ ├── models/
+│ │ └── tests/
+│ └── package.json
 │
-├── blockchain/           # Smart contracts
-│   ├── contracts/        # Solidity contracts
-│   ├── scripts/          # Deployment scripts
-│   └── hardhat.config.js
+├── blockchain/ # Solidity smart contracts
+│ ├── contracts/
+│ ├── scripts/
+│ └── hardhat.config.js
 │
-├── frontend/             # Frontend applications
-│   ├── issuer/           # Issuer application
-│   ├── verifier/         # Verifier application
-│   └── wallet/           # Wallet application
+├── frontend/ # Frontend applications
+│ ├── issuer/
+│ ├── verifier/
+│ └── wallet/
 │
-└── docs/                 # Documentation
-    ├── architecture.md   # System architecture
-    ├── api-spec.md       # API specification
-    └── demo-flow.md      # Demo walkthrough
-```
+└── docs/ # Architecture & demo documentation
+├── architecture.md
+├── api-spec.md
+└── demo-flow.md
 
-## 🚀 Quick Start
 
-### Prerequisites
+---
 
-- Node.js v16+
-- MongoDB
-- Ethereum node (Hardhat for local development)
-
-### 1. Backend Setup
-
-```bash
-cd backend
-npm install
-cp .env.example .env
-# Edit .env with your configuration
-npm run dev
-```
-
-### 2. Blockchain Setup
-
-```bash
-cd blockchain
-npm install
-
-# Start local blockchain
-npx hardhat node
-
-# Deploy contracts (in another terminal)
-npx hardhat run scripts/deploy.js --network localhost
-```
-
-### 3. Frontend Setup
-
-```bash
-cd frontend/wallet
-npm install
-npm run dev
-```
-
-## 📚 Documentation
-
-- [Architecture](docs/architecture.md) - System design and components
-- [API Specification](docs/api-spec.md) - Complete API reference
-- [Demo Flow](docs/demo-flow.md) - Step-by-step demo guide
-
-## 🔑 Key Components
+## 🛠️ Tech Stack
 
 ### Backend
-- **Framework**: Express.js
-- **DID/VC Library**: Veramo
-- **Database**: MongoDB
-- **Blockchain**: ethers.js
+- Node.js + Express.js
+- Veramo (DID & Verifiable Credentials)
+- MongoDB
+- ethers.js
 
 ### Blockchain
-- **Platform**: Ethereum
-- **Development**: Hardhat
-- **Language**: Solidity 0.8.19
+- Ethereum-compatible testnet (Polygon Amoy / Sepolia)
+- Solidity
+- Hardhat
 
-### Smart Contracts
-- **CredentialRegistry**: Manages credential anchoring and revocation
+### Frontend
+- React
+- TailwindCSS
+- QR-based credential sharing
 
-## 🔐 Security Features
+---
 
-- JWT-based authentication
-- Role-based access control
-- Rate limiting
-- Encrypted key storage
-- On-chain credential anchoring
-- Revocation registry
+## 🔐 Security Model (Implemented)
 
-## 📖 API Endpoints
+- Cryptographic signature verification
+- Trusted issuer registry
+- Blockchain-backed credential revocation
+- Rate limiting and input validation
+- No Aadhaar, phone numbers, emails, or personal identifiers stored
+
+---
+
+## 📖 API Overview (Implemented)
 
 ### DID Management
-- `POST /api/did/create` - Create DID
-- `GET /api/did/:did` - Resolve DID
-- `PUT /api/did/:did` - Update DID
-- `DELETE /api/did/:did` - Delete DID
+- `POST /api/did/create` – Create a decentralized identifier
+- `POST /api/did/recover` – Recover DID using seed phrase
+- `GET /api/did/:did` – Resolve DID document
 
-### Credentials
-- `POST /api/credentials/issue` - Issue credential
-- `POST /api/credentials/verify` - Verify credential
-- `POST /api/credentials/revoke` - Revoke credential
-- `GET /api/credentials/:id` - Get credential
-- `GET /api/credentials/holder/:did` - Get holder's credentials
+### Credential Management
+- `POST /api/credentials/issue` – Issue a verifiable credential
+- `GET /api/credentials/:id` – Retrieve credential
+- `GET /api/credentials/verify` – Verify credential authenticity
+- `POST /api/credentials/revoke` – Revoke a credential
 
-### Blockchain
-- `POST /api/blockchain/anchor` - Anchor credential
-- `GET /api/blockchain/verify/:hash` - Verify on-chain
-- `GET /api/blockchain/status/:id` - Check revocation status
+### Blockchain Utilities
+- `GET /api/blockchain/check/:hash` – Check credential hash status
+- `GET /api/blockchain/tx/:txHash` – Get blockchain transaction details
 
-## 🧪 Testing
+---
 
-### Backend Tests
-```bash
-cd backend
-npm test
-```
+## 🔁 End-to-End Demo Flow
 
-### Smart Contract Tests
-```bash
-cd blockchain
-npx hardhat test
-```
+1. Issuer issues a verifiable credential
+2. Holder receives credential in wallet
+3. Holder shares credential via QR code
+4. Verifier scans QR code
+5. Backend verifies signature and revocation status
+6. Blockchain confirms issuer trust
+7. Result displayed as **VERIFIED** or **REVOKED**
 
-## 🛠️ Development
+---
 
-### Compile Smart Contracts
-```bash
-cd blockchain
-npx hardhat compile
-```
+## 📜 Standards Alignment
 
-### Run Local Blockchain
-```bash
-npx hardhat node
-```
+- W3C Decentralized Identifiers (DID) v1.0
+- W3C Verifiable Credentials Data Model v1.1
 
-### Deploy Contracts
-```bash
-npx hardhat run scripts/deploy.js --network localhost
-```
+---
 
-## 📝 Standards Compliance
+## 🚀 Future Scope
 
-- [W3C Decentralized Identifiers (DIDs) v1.0](https://www.w3.org/TR/did-core/)
-- [W3C Verifiable Credentials Data Model v1.1](https://www.w3.org/TR/vc-data-model/)
-- DID Methods: `did:ethr`, `did:key`
-- Proof Formats: JWT, JSON-LD
+- Selective disclosure of credential attributes
+- Social recovery for decentralized identities
+- Batch credential verification
+- Enterprise-grade access controls
 
-## 🤝 Contributing
+---
 
-Contributions are welcome! Please read our contributing guidelines before submitting PRs.
+## 👥 Team
+
+IdentiX is developed by a team of five members as part of the IITGN Codeversity Hackathon.
+
+---
 
 ## 📄 License
 
-MIT License - see LICENSE file for details
-
-## 🔗 Resources
-
-- [Veramo Documentation](https://veramo.io/)
-- [W3C DID Specification](https://www.w3.org/TR/did-core/)
-- [W3C VC Specification](https://www.w3.org/TR/vc-data-model/)
-- [Ethereum Documentation](https://ethereum.org/en/developers/docs/)
-
-## 👥 Authors
-
-Your Name / Team Name
-
-## 📧 Contact
-
-For questions and support, please open an issue or contact [your-email@example.com]
+This project is released under the MIT License.

@@ -2,12 +2,20 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const connectDB = require('./config/db');
+const { initVeramo } = require('./config/veramo');
 
 const didRoutes = require('./routes/did.routes');
 const credentialRoutes = require('./routes/credential.routes');
 const blockchainRoutes = require('./routes/blockchain.routes');
 
 const app = express();
+
+// Initialize database and Veramo
+(async () => {
+    await connectDB();
+    await initVeramo();
+})();
 
 // Middleware
 app.use(helmet());

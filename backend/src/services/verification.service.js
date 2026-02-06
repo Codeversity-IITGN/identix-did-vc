@@ -12,10 +12,12 @@ const verifyCredential = async (credential) => {
 
         return {
             verified: result.verified,
-            issuer: credential.issuer,
+            credential: credential,
+            issuer: credential.issuer?.id || credential.issuer,
             subject: credential.credentialSubject,
             issuanceDate: credential.issuanceDate,
             expirationDate: credential.expirationDate,
+            reason: result.verified ? null : (result.error?.message || 'Verification failed'),
             errors: result.error ? [result.error] : [],
         };
     } catch (error) {
