@@ -5,12 +5,13 @@ const CredentialModel = require('../models/Credential.model');
 const issueCredential = async ({ issuerDID, holderDID, credentialSubject, type }) => {
     try {
         const agent = getAgent();
+        const credentialType = Array.isArray(type) ? (type[1] || type[0]) : (type || 'CustomCredential');
 
         // Create verifiable credential
         const verifiableCredential = await agent.createVerifiableCredential({
             credential: {
                 '@context': ['https://www.w3.org/2018/credentials/v1'],
-                type: ['VerifiableCredential', type || 'CustomCredential'],
+                type: ['VerifiableCredential', credentialType],
                 issuer: { id: issuerDID },
                 credentialSubject: {
                     id: holderDID,
@@ -31,7 +32,7 @@ const issueCredential = async ({ issuerDID, holderDID, credentialSubject, type }
             credentialId,
             issuer: issuerDID,
             holder: holderDID,
-            type: Array.isArray(type) ? type[1] || type[0] : type,
+            type: credentialType,
             credentialSubject,
             credential: verifiableCredential,
             status: 'active',
@@ -70,7 +71,6 @@ const getCredential = async (credentialId) => {
 const getCredentialsByHolder = async (holderDID) => {
     try {
         const credentials = await CredentialModel.find({ holder: holderDID });
-        // Map to include ID and proper structure
         return credentials.map(cred => ({
             ...cred.credential,
             id: cred.credentialId,
@@ -82,8 +82,26 @@ const getCredentialsByHolder = async (holderDID) => {
     }
 };
 
+const getCredentialsByIssuer = async (issuerDID) => {
+    try {
+        const credentials = await CredentialModel.find({ issuer: issuerDID });
+        return credentials.map(cred => ({
+            ...cred.credential,
+            id: cred.credentialId,
+            status: cred.status,
+            type: cred.type,
+            holder: cred.holder,
+            credentialSubject: cred.credentialSubject,
+            issuanceDate: cred.issuanceDate,
+        }));
+    } catch (error) {
+        throw new Error(`Failed to get credentials: ${error.message}`);
+    }
+};
+
 module.exports = {
     issueCredential,
     getCredential,
     getCredentialsByHolder,
+    getCredentialsByIssuer,
 };

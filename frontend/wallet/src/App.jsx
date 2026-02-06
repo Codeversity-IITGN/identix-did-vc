@@ -4,6 +4,7 @@ import CreateWallet from './pages/CreateWallet'
 import RecoverWallet from './pages/RecoverWallet'
 import CredentialsList from './pages/CredentialsList'
 import CredentialDetail from './pages/CredentialDetail'
+import ClaimCredential from './pages/ClaimCredential'
 import { WalletProvider } from './context/WalletContext'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/recover-wallet" element={<RecoverWallet />} />
           <Route path="/credentials" element={<CredentialsList />} />
           <Route path="/credential/:credentialId" element={<CredentialDetail />} />
+          <Route path="/claim" element={<ClaimCredential />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

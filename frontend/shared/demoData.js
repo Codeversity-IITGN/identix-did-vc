@@ -1,17 +1,23 @@
 /**
- * Demo data for Wallet - matches Issuer and Verifier for coordination.
- * Keep in sync with issuer and verifier demoData!
+ * Shared demo data for IdentiX - ensures coordination between Issuer, Wallet, and Verifier apps.
+ * All three apps must use this exact data for demo mode to work correctly.
  */
 
+// Demo Holder (Student/Individual) - used by Wallet
 export const DEMO_HOLDER_DID = 'did:ethr:0x1234567890123456789012345678901234567890'
 export const DEMO_HOLDER_SEED_PHRASE = 'abandon ability able about above absent absorb abstract absurd abuse access accident'
-export const DEMO_ISSUER_DID = 'did:ethr:0x9876543210987654321098765432109876543210'
 
+// Demo Issuer (University/Institute) - used by Issuer
+export const DEMO_ISSUER_DID = 'did:ethr:0x9876543210987654321098765432109876543210'
+export const DEMO_ISSUER_WALLET = '0x9876543210987654321098765432109876543210'
+
+// Shared credential IDs - used across all apps
 export const DEMO_CREDENTIAL_IDS = {
   EDUCATIONAL: 'cred-demo-edu-1',
   PROFESSIONAL: 'cred-demo-pro-1',
 }
 
+// Canonical demo credentials - EXACT format for QR sharing and verification
 export const DEMO_CREDENTIALS = [
   {
     id: DEMO_CREDENTIAL_IDS.EDUCATIONAL,
@@ -48,9 +54,27 @@ export const DEMO_CREDENTIALS = [
   },
 ]
 
-export const DEMO_DID = DEMO_HOLDER_DID
-export const DEMO_SEED_PHRASE = DEMO_HOLDER_SEED_PHRASE
+// Demo credentials as issued by Issuer (for IssuedCredentials list)
+export const DEMO_ISSUED_CREDENTIALS = DEMO_CREDENTIALS.map((c) => ({
+  id: c.id,
+  credentialId: c.id,
+  type: c.type,
+  holder: c.credentialSubject?.id || DEMO_HOLDER_DID,
+  credentialSubject: c.credentialSubject,
+  issuanceDate: c.issuanceDate,
+  status: c.status,
+}))
 
+// Demo verification result - matches credential structure for consistency
+export const DEMO_VERIFICATION_RESULT = {
+  verified: true,
+  credential: DEMO_CREDENTIALS[0],
+  issuer: DEMO_ISSUER_DID,
+  issuanceDate: DEMO_CREDENTIALS[0].issuanceDate,
+  errors: [],
+}
+
+// Check if a credential is a known demo credential (for local verification when backend unavailable)
 export const isDemoCredential = (credential) => {
   if (!credential) return false
   const id = credential.id || credential.credentialId
@@ -61,12 +85,13 @@ export const isDemoCredential = (credential) => {
   )
 }
 
-export const isDemoMode = () => localStorage.getItem('identix_demo_mode') === 'true'
-
-export const enableDemoMode = () => {
-  localStorage.setItem('identix_demo_mode', 'true')
-  localStorage.setItem('identix_did', DEMO_HOLDER_DID)
-  localStorage.setItem('identix_seed_phrase', DEMO_HOLDER_SEED_PHRASE)
-}
-
-export const disableDemoMode = () => localStorage.removeItem('identix_demo_mode')
+// Create verification result for a demo credential
+export const createDemoVerificationResult = (credential, isRevoked = false) => ({
+  verified: !isRevoked,
+  credential,
+  issuer: credential?.issuer?.id || credential?.issuer || DEMO_ISSUER_DID,
+  issuanceDate: credential?.issuanceDate,
+  status: isRevoked ? 'revoked' : 'active',
+  reason: isRevoked ? 'Credential has been revoked by the issuer' : null,
+  errors: [],
+})

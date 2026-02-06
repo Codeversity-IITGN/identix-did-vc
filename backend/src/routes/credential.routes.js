@@ -6,7 +6,8 @@ const credentialController = require('../controllers/credential.controller');
 router.post('/issue', credentialController.issueCredential);
 router.post('/verify', credentialController.verifyCredential);
 router.post('/revoke', credentialController.revokeCredential);
-router.get('/:credentialId', credentialController.getCredential);
 router.get('/holder/:did', credentialController.getCredentialsByHolder);
+router.get('/issuer/:did', credentialController.getCredentialsByIssuer);
+router.get('/:credentialId', credentialController.getCredential);
 
 module.exports = router;

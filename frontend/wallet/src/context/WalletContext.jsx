@@ -6,48 +6,75 @@ const WalletContext = createContext()
 
 const API_BASE_URL = '/api'
 
+// Initialize from localStorage synchronously so CredentialsList has did on first render
+const getInitialDid = () => {
+  const savedDID = localStorage.getItem('identix_did')
+  if (savedDID) return savedDID
+  if (localStorage.getItem('identix_demo_mode') === 'true') return DEMO_DID
+  return null
+}
+
+const getInitialSeedPhrase = () => {
+  const saved = localStorage.getItem('identix_seed_phrase')
+  if (saved) return saved
+  if (localStorage.getItem('identix_demo_mode') === 'true') return DEMO_SEED_PHRASE
+  return null
+}
+
 export const WalletProvider = ({ children }) => {
-  const [did, setDid] = useState(null)
-  const [seedPhrase, setSeedPhrase] = useState(null)
+  const [did, setDid] = useState(getInitialDid)
+  const [seedPhrase, setSeedPhrase] = useState(getInitialSeedPhrase)
   const [credentials, setCredentials] = useState([])
   const [loading, setLoading] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
-    // Load DID from localStorage or use demo mode
     const savedDID = localStorage.getItem('identix_did')
     const savedSeedPhrase = localStorage.getItem('identix_seed_phrase')
     
     if (savedDID) {
       setDid(savedDID)
-      if (savedSeedPhrase) {
-        setSeedPhrase(savedSeedPhrase)
-      }
+      if (savedSeedPhrase) setSeedPhrase(savedSeedPhrase)
       loadCredentials(savedDID)
     } else if (isDemoMode()) {
-      // Auto-enable demo mode if no DID exists
       setDid(DEMO_DID)
       setSeedPhrase(DEMO_SEED_PHRASE)
       loadCredentials(DEMO_DID)
     }
+    setIsInitialized(true)
   }, [])
 
   const loadCredentials = async (didAddress) => {
-    // Use demo data if backend is unavailable
+    let baseCredentials = []
+    
     if (isDemoMode()) {
-      setCredentials(DEMO_CREDENTIALS)
-      return
+      baseCredentials = DEMO_CREDENTIALS
+    } else {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/credentials/holder/${didAddress}`, {
+          timeout: 3000,
+        })
+        baseCredentials = response.data.data || []
+      } catch (error) {
+        console.warn('Backend unavailable, using demo data:', error.message)
+        baseCredentials = DEMO_CREDENTIALS
+      }
     }
-
+    
+    // Merge claimed credentials from localStorage (from Issuer's "Add to Wallet")
     try {
-      const response = await axios.get(`${API_BASE_URL}/credentials/holder/${didAddress}`, {
-        timeout: 3000,
+      const claimed = JSON.parse(localStorage.getItem('identix_claimed_credentials') || '[]')
+      const existingIds = new Set(baseCredentials.map(c => c.id || c.credentialId))
+      const newClaimed = claimed.filter(c => {
+        const id = c.id || c.credentialId
+        return id && !existingIds.has(id)
       })
-      setCredentials(response.data.data || [])
-    } catch (error) {
-      console.warn('Backend unavailable, using demo data:', error.message)
-      // Use demo data when backend is unavailable
-      setCredentials(DEMO_CREDENTIALS)
-    }
+      if (newClaimed.length > 0) {
+        baseCredentials = [...baseCredentials, ...newClaimed]
+      }
+    } catch (e) { /* ignore */ }
+    
+    setCredentials(baseCredentials)
   }
 
   const createDID = async () => {
@@ -112,6 +139,22 @@ export const WalletProvider = ({ children }) => {
     }
   }
 
+  // Add a claimed credential (from Issuer's "Add to Wallet" flow)
+  const addCredential = (credential) => {
+    if (!credential) return
+    const credId = credential.id || credential.credentialId
+    if (credentials.some(c => (c.id || c.credentialId) === credId)) return
+    setCredentials(prev => [...prev, { ...credential, status: credential.status || 'active' }])
+    // Persist to localStorage for demo mode (survives refresh)
+    try {
+      const stored = JSON.parse(localStorage.getItem('identix_claimed_credentials') || '[]')
+      if (!stored.some(c => (c.id || c.credentialId) === credId)) {
+        stored.push({ ...credential, status: credential.status || 'active' })
+        localStorage.setItem('identix_claimed_credentials', JSON.stringify(stored))
+      }
+    } catch (e) { /* ignore */ }
+  }
+
   return (
     <WalletContext.Provider
       value={{
@@ -119,10 +162,12 @@ export const WalletProvider = ({ children }) => {
         seedPhrase,
         credentials,
         loading,
+        isInitialized,
         createDID,
         recoverDID,
         getCredential,
         refreshCredentials,
+        addCredential,
       }}
     >
       {children}

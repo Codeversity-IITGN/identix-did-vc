@@ -1,39 +1,42 @@
 # Demo Mode Guide - Frontend Apps Work Without Backend
 
-All three frontend apps now support **Demo Mode** which allows you to see and interact with the UI even when the backend is not running!
+All three frontend apps now support **Demo Mode** with **full coordination** between Issuer, Wallet, and Verifier. Credentials flow from Issuer → Wallet → Verifier seamlessly!
 
-## 🎯 Quick Start - Demo Mode
+## 🎯 Quick Start - Demo Mode (Coordinated Flow)
+
+**See [COORDINATION_FLOW.md](./COORDINATION_FLOW.md) for the full end-to-end flow!**
 
 ### Wallet App (http://localhost:3001)
 
 1. **Open the app** → You'll see the Welcome page
 2. **Click "Try Demo Mode"** button (green button at bottom)
 3. **Instantly see:**
-   - Pre-loaded DID
+   - Pre-loaded DID (copy it for the Issuer!)
    - 2 demo credentials
    - Full UI functionality
 
 **What works in Demo Mode:**
 - ✅ View credentials list
 - ✅ View credential details
-- ✅ Generate QR codes
-- ✅ Share credentials
+- ✅ Generate QR codes for Verifier to scan
+- ✅ Share credentials via QR or JSON
+- ✅ Receive credentials from Issuer via "Add to Wallet" link
 - ✅ All UI interactions
 
 ### Verifier App (http://localhost:3003)
 
 1. **Open the app** → You'll see the Landing page
-2. **Click "Try Demo Verification"** button (blue button)
-3. **Instantly see:**
-   - Demo verification result (VERIFIED ✅)
-   - Credential details
-   - Full verification UI
+2. **Verify credentials from Wallet:**
+   - **Scan QR** - Scan the QR code from Wallet's credential detail page
+   - **Paste JSON** - Copy from Wallet or click "Load sample credential"
+3. **Or click "Try Demo Verification"** for instant demo result
 
 **What works in Demo Mode:**
-- ✅ View verification results
+- ✅ **Scan QR from Wallet** - Verifies the actual credential (coordinates!)
+- ✅ **Paste JSON** - From Wallet or use "Load sample credential" button
+- ✅ View verification results (VERIFIED for valid demo credentials)
 - ✅ See credential details
-- ✅ QR scanning (camera still works)
-- ✅ Paste JSON verification (uses demo data if backend unavailable)
+- ✅ QR scanning (camera works)
 
 ### Issuer App (http://localhost:3002)
 
@@ -46,8 +49,10 @@ All three frontend apps now support **Demo Mode** which allows you to see and in
 
 **What works in Demo Mode:**
 - ✅ Issue credentials (creates demo credentials)
+- ✅ **"Add to Wallet"** - Opens Wallet with credential for holder to claim
 - ✅ View issued credentials (shows 2 demo credentials)
 - ✅ Revoke credentials (demo revocation)
+- ✅ Use Wallet's DID in Holder field for coordination
 - ✅ All UI interactions
 
 ## 🚀 Running the Apps

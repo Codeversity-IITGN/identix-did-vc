@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useWallet } from '../context/WalletContext'
 import axios from 'axios'
-import { FileText, Loader, CheckCircle, XCircle, Award, ArrowLeft } from 'lucide-react'
+import { FileText, Loader, CheckCircle, XCircle, Award, ArrowLeft, Wallet } from 'lucide-react'
+import { getWalletClaimUrl } from '../utils/config'
 
 const IssueCredential = () => {
   const navigate = useNavigate()
@@ -64,10 +65,11 @@ const IssueCredential = () => {
 
       setResult(response.data.data)
     } catch (err) {
-      // Use demo result when backend is unavailable
+      // Use demo result when backend is unavailable - format matches shared for Verifier coordination
       console.warn('Backend unavailable, using demo result')
       const demoResult = {
         id: `cred-demo-${Date.now()}`,
+        credentialId: `cred-demo-${Date.now()}`,
         '@context': ['https://www.w3.org/2018/credentials/v1'],
         type: ['VerifiableCredential', formData.credentialType],
         issuer: { id: formData.issuerDID },
@@ -76,6 +78,7 @@ const IssueCredential = () => {
           ...credentialSubject,
         },
         issuanceDate: new Date().toISOString(),
+        status: 'active',
       }
       setResult(demoResult)
       // Don't set error, just use demo result
@@ -130,6 +133,21 @@ const IssueCredential = () => {
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <h3 className="font-semibold text-gray-900 mb-2">Credential ID:</h3>
               <p className="font-mono text-sm text-gray-700 break-all">{result.id}</p>
+            </div>
+
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800 mb-3">
+                <strong>Share with holder:</strong> Send this link to the credential holder so they can add it to their wallet.
+              </p>
+              <a
+                href={getWalletClaimUrl(result)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                <Wallet className="h-5 w-5 mr-2" />
+                Add to Wallet (Open in New Tab)
+              </a>
             </div>
 
             <div className="flex space-x-4">
@@ -233,9 +251,11 @@ const IssueCredential = () => {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="did:ethr:0x..."
+                placeholder="did:ethr:0x1234567890123456789012345678901234567890"
               />
-              <p className="mt-1 text-xs text-gray-500">Enter the recipient's DID</p>
+              <p className="mt-1 text-xs text-gray-500">
+                Enter the recipient's DID. For demo: use Wallet app's DID (did:ethr:0x1234...)
+              </p>
             </div>
 
             <div>

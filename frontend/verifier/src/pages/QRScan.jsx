@@ -55,14 +55,34 @@ const QRScan = () => {
         credential,
       }, { timeout: 3000 })
 
-      // Store result in sessionStorage and navigate
       sessionStorage.setItem('verificationResult', JSON.stringify(response.data.data))
       navigate('/result')
     } catch (err) {
-      // Use demo data when backend is unavailable
-      console.warn('Backend unavailable, using demo verification result')
-      const { DEMO_VERIFICATION_RESULT } = await import('../utils/demoData')
-      sessionStorage.setItem('verificationResult', JSON.stringify(DEMO_VERIFICATION_RESULT))
+      // Backend unavailable or verification failed - use local verification for demo credentials
+      const { isDemoCredential, createDemoVerificationResult, DEMO_VERIFICATION_RESULT } = await import('../utils/demoData')
+      
+      let result
+      try {
+        if (isDemoCredential(credential)) {
+          const isRevoked = credential.status === 'revoked'
+          result = createDemoVerificationResult(credential, isRevoked)
+        } else {
+          result = {
+            ...DEMO_VERIFICATION_RESULT,
+            verified: false,
+            credential,
+            reason: 'Backend unavailable. This credential could not be verified. Try with backend running.',
+          }
+        }
+      } catch (demoErr) {
+        result = {
+          verified: false,
+          credential,
+          reason: 'Verification failed. Please check the credential format.',
+          errors: [],
+        }
+      }
+      sessionStorage.setItem('verificationResult', JSON.stringify(result))
       navigate('/result')
     } finally {
       setLoading(false)
@@ -211,8 +231,19 @@ const QRScan = () => {
                 onChange={(e) => setCredentialJson(e.target.value)}
                 rows={12}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-sm"
-                placeholder="Paste credential JSON here..."
+                placeholder="Paste credential JSON here (or use sample below)..."
               />
+              <button
+                type="button"
+                onClick={async () => {
+                  const { DEMO_CREDENTIAL_JSON } = await import('../utils/demoData')
+                  setCredentialJson(DEMO_CREDENTIAL_JSON)
+                  setError(null)
+                }}
+                className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+              >
+                Load sample credential (from Wallet demo)
+              </button>
               <button
                 onClick={handlePasteVerification}
                 disabled={loading || !credentialJson.trim()}

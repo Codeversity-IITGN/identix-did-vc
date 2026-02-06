@@ -58,10 +58,21 @@ const getCredentialsByHolder = async (req, res, next) => {
     }
 };
 
+const getCredentialsByIssuer = async (req, res, next) => {
+    try {
+        const { did } = req.params;
+        const credentials = await credentialService.getCredentialsByIssuer(did);
+        res.status(200).json({ success: true, data: credentials });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     issueCredential,
     verifyCredential,
     revokeCredential,
     getCredential,
     getCredentialsByHolder,
+    getCredentialsByIssuer,
 };

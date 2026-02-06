@@ -1,23 +1,32 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CheckCircle, XCircle, AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-react'
 
 const VerificationResult = () => {
   const navigate = useNavigate()
   const [result, setResult] = useState(null)
+  const hasLoadedRef = useRef(false)
 
   useEffect(() => {
     const storedResult = sessionStorage.getItem('verificationResult')
     if (storedResult) {
+      hasLoadedRef.current = true
       setResult(JSON.parse(storedResult))
       sessionStorage.removeItem('verificationResult')
-    } else {
+    } else if (!hasLoadedRef.current) {
       navigate('/verify')
     }
   }, [navigate])
 
   if (!result) {
-    return null
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mb-4"></div>
+          <p className="text-gray-600">Loading verification result...</p>
+        </div>
+      </div>
+    )
   }
 
   const isVerified = result.verified === true
