@@ -34,17 +34,19 @@ const RevokeCredential = () => {
 
       setResult(response.data.data)
     } catch (err) {
-      // Use demo result when backend is unavailable
-      console.warn('Backend unavailable, using demo revoke result')
-      const demoResult = {
-        credentialId,
-        status: 'revoked',
-        reason: reason || 'Revoked by issuer',
-        revokedAt: new Date().toISOString(),
+      // Use demo result when backend is unavailable (network error, timeout)
+      if (err.code === 'ECONNABORTED' || err.code === 'ERR_NETWORK' || !err.response) {
+        console.warn('Backend unavailable, using demo revoke result')
+        const demoResult = {
+          credentialId,
+          status: 'revoked',
+          reason: reason || 'Revoked by issuer',
+          revokedAt: new Date().toISOString(),
+        }
+        setResult(demoResult)
+      } else {
+        setError(err.response?.data?.error?.message || 'Failed to revoke credential')
       }
-      setResult(demoResult)
-    } catch (err) {
-      setError(err.response?.data?.error?.message || 'Failed to revoke credential')
     } finally {
       setLoading(false)
     }
