@@ -1,0 +1,195 @@
+You are building the FRONTEND for a hackathon project called **IdentiX**.
+
+Project:
+- Decentralized Identity (DID) & Verifiable Credentials (VC) platform
+- Hackathon MVP (18-hour scope)
+- Focus: clean UI, clear flows, demo readiness
+- NOT production-grade, NOT enterprise auth
+
+====================================================
+TECH STACK (MANDATORY)
+====================================================
+- Framework: React (Vite or Next.js – choose one)
+- Language: JavaScript (NOT TypeScript)
+- Styling: TailwindCSS
+- HTTP Client: axios / fetch
+- QR Code:
+  - Generation: qrcode.react
+  - Scanning: react-qr-reader
+- Wallet:
+  - MetaMask ONLY for Issuer & Verifier
+  - User wallet is app-managed (seed phrase based)
+
+====================================================
+ARCHITECTURE RULES (VERY IMPORTANT)
+====================================================
+1. Frontend NEVER:
+   - Talks to blockchain directly
+   - Verifies cryptographic signatures
+   - Stores issuer private keys
+
+2. Frontend ONLY:
+   - Calls backend REST APIs
+   - Displays verification results
+   - Generates and scans QR codes
+   - Manages basic UI state
+
+3. Backend endpoints already exist:
+   - /api/did/*
+   - /api/credentials/*
+   - /api/blockchain/*
+
+DO NOT invent new APIs.
+
+====================================================
+GENERATE 3 SEPARATE FRONTEND APPS
+====================================================
+
+Create a `frontend/` folder with:
+
+frontend/
+ ├── wallet/     → USER (Holder)
+ ├── verifier/   → VERIFIER
+ └── issuer/     → ISSUER
+
+Each app must be independent and runnable.
+
+====================================================
+1️⃣ USER WALLET UI (frontend/wallet)
+====================================================
+
+Purpose:
+- User owns credentials
+- Stores and shares credentials
+- No blockchain interaction
+
+Pages to generate:
+
+1. Welcome Page
+- Buttons:
+  - "Create New Wallet"
+  - "Recover Wallet"
+
+2. Create Wallet Page
+- Auto-call POST /api/did/create
+- Display 12-word seed phrase
+- Checkbox: "I have saved my seed phrase"
+- Show generated DID
+- Continue to wallet
+
+3. Recover Wallet Page
+- Input seed phrase
+- Call POST /api/did/recover
+- Restore DID
+
+4. Credentials List Page
+- Fetch credentials from backend
+- Card layout:
+  - Credential type
+  - Issuer name
+  - Issue date
+
+5. Credential Detail Page
+- Full credential display
+- Button: "Share via QR"
+- Generate QR containing credential JSON or credential ID
+
+DO NOT:
+- Add selective disclosure
+- Add blockchain data
+- Add login/auth
+
+====================================================
+2️⃣ VERIFIER UI (frontend/verifier)
+====================================================
+
+Purpose:
+- Verify credentials
+- See clear verification result
+
+Pages to generate:
+
+1. Landing Page
+- Button: "Verify Credential"
+
+2. QR Scan Page
+- Camera QR scan
+- Manual paste credential JSON / ID
+- On scan → call GET /api/credentials/verify
+
+3. Verification Result Page
+Show ONLY:
+- Status:
+  ✅ VERIFIED
+  ❌ INVALID
+  ⚠️ REVOKED
+- Issuer name
+- Issue date
+- Credential type
+
+DO NOT:
+- Store verification history
+- Ask for user identity
+- Show wallet or blockchain internals
+
+====================================================
+3️⃣ ISSUER UI (frontend/issuer)
+====================================================
+
+Purpose:
+- Issue and revoke credentials
+- Trusted entity (university / employer)
+
+Pages to generate:
+
+1. Issuer Login Page
+- MetaMask connect
+- Show connected wallet address
+- Backend will validate trust
+
+2. Issue Credential Page
+Form fields:
+- Holder DID
+- Credential type
+- Credential title
+- Issue date
+
+On submit:
+- Call POST /api/credentials/issue
+- Show success message
+
+3. Issued Credentials Page
+- List credentials issued
+- Status: Active / Revoked
+
+4. Revoke Credential Page
+- Input credential ID
+- Button: "Revoke"
+- Call POST /api/credentials/revoke
+
+====================================================
+COMMON REQUIREMENTS FOR ALL UIs
+====================================================
+- Clean TailwindCSS styling
+- Simple layout
+- Clear buttons and labels
+- Loading states
+- Error messages from backend
+- Mobile responsive (basic)
+
+====================================================
+OUTPUT EXPECTATION
+====================================================
+Generate:
+- Folder structure
+- React components
+- API integration
+- Minimal Tailwind styling
+- README in each app explaining how to run
+
+IMPORTANT:
+- Keep it SIMPLE
+- Prioritize DEMO FLOW:
+  Issue → Receive → Share QR → Verify → Revoke
+
+Start by generating the frontend folder structure and wallet app first, then verifier, then issuer.
