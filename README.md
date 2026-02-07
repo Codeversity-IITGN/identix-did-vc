@@ -48,6 +48,7 @@ identix-did-vc/
 │ └── hardhat.config.js
 │
 ├── frontend/ # Frontend applications
+│ ├── app/ # Unified app (Wallet + Issuer + Verifier)
 │ ├── issuer/
 │ ├── verifier/
 │ └── wallet/

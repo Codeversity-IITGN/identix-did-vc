@@ -1,8 +1,28 @@
 # Quick Start Guide - IdentiX
 
-## Coordinated flow (all three sites + backend)
+## Single app (recommended)
 
-For **full coordination** (Issuer, Wallet, Verifier working together), start the **backend first**, then the three frontends. All frontends proxy `/api` to the backend.
+The **unified frontend** at `frontend/app` provides Wallet, Issuer, and Verifier in one app. Start the backend, then the app:
+
+```bash
+# Terminal 1 - Backend (required for real DIDs and credentials)
+cd backend
+npm install
+npm run dev
+
+# Terminal 2 - Unified app (http://localhost:5173)
+npm run dev:app
+```
+
+First time: install app dependencies with `cd frontend/app && npm install`.
+
+From the app you can: create/recover wallet (DID), issue credentials, and verify credentials. The app proxies `/api` and `/health` to the backend (port 3000).
+
+---
+
+## Coordinated flow (legacy: three separate sites + backend)
+
+For the **legacy** setup (separate Wallet, Issuer, Verifier apps), start the **backend first**, then the three frontends:
 
 ```bash
 # Terminal 1 - Backend (required for coordination)
