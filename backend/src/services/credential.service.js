@@ -1,50 +1,60 @@
 // Credential service
 const { getAgent } = require('../config/veramo');
 const CredentialModel = require('../models/Credential.model');
+const { isDbConnected } = require('../config/db');
+const { credentialStore } = require('../store/memoryStore');
+
+const credentialTypeFrom = (type) => Array.isArray(type) ? (type[1] || type[0]) : (type || 'CustomCredential');
 
 const issueCredential = async ({ issuerDID, holderDID, credentialSubject, type }) => {
     try {
+        const credentialType = credentialTypeFrom(type);
+        const baseCredential = {
+            '@context': ['https://www.w3.org/2018/credentials/v1'],
+            type: ['VerifiableCredential', credentialType],
+            issuer: typeof issuerDID === 'string' ? { id: issuerDID } : issuerDID,
+            credentialSubject: { id: holderDID, ...credentialSubject },
+            issuanceDate: new Date().toISOString(),
+        };
+
+        let verifiableCredential;
         const agent = getAgent();
+        if (agent) {
+            try {
+                verifiableCredential = await agent.createVerifiableCredential({
+                    credential: baseCredential,
+                    proofFormat: 'jwt',
+                });
+            } catch (e) {
+                verifiableCredential = { ...baseCredential };
+            }
+        } else {
+            verifiableCredential = { ...baseCredential };
+        }
 
-        // Create verifiable credential
-        const verifiableCredential = await agent.createVerifiableCredential({
-            credential: {
-                '@context': ['https://www.w3.org/2018/credentials/v1'],
-                type: ['VerifiableCredential', type || 'CustomCredential'],
-                issuer: { id: issuerDID },
-                credentialSubject: {
-                    id: holderDID,
-                    ...credentialSubject,
-                },
-                issuanceDate: new Date().toISOString(),
-            },
-            proofFormat: 'jwt',
-        });
+        const credentialId = verifiableCredential.proof?.jwt ||
+            verifiableCredential.id ||
+            `cred:${Date.now()}:${Math.random().toString(36).substr(2, 9)}`;
 
-        // Generate credential ID (use JWT if available, otherwise use a hash)
-        const credentialId = verifiableCredential.proof?.jwt || 
-                            verifiableCredential.id || 
-                            `cred:${Date.now()}:${Math.random().toString(36).substr(2, 9)}`;
-
-        // Save to database
-        const credentialRecord = new CredentialModel({
+        const record = {
             credentialId,
             issuer: issuerDID,
             holder: holderDID,
-            type: Array.isArray(type) ? type[1] || type[0] : type,
+            type: credentialType,
             credentialSubject,
-            credential: verifiableCredential,
+            credential: { ...verifiableCredential, id: credentialId },
             status: 'active',
             issuanceDate: new Date(verifiableCredential.issuanceDate || Date.now()),
-        });
-
-        await credentialRecord.save();
-
-        // Return credential with ID
-        return {
-            ...verifiableCredential,
-            id: credentialId,
         };
+
+        if (isDbConnected()) {
+            const credentialRecord = new CredentialModel(record);
+            await credentialRecord.save();
+        } else {
+            await credentialStore.save(record);
+        }
+
+        return { ...record.credential, id: credentialId };
     } catch (error) {
         throw new Error(`Failed to issue credential: ${error.message}`);
     }
@@ -52,30 +62,62 @@ const issueCredential = async ({ issuerDID, holderDID, credentialSubject, type }
 
 const getCredential = async (credentialId) => {
     try {
-        const credential = await CredentialModel.findOne({ credentialId });
-        if (!credential) {
-            throw new Error('Credential not found');
+        if (isDbConnected()) {
+            const credential = await CredentialModel.findOne({ credentialId });
+            if (!credential) throw new Error('Credential not found');
+            return { ...credential.credential, id: credential.credentialId, status: credential.status };
         }
-        // Return the stored credential object with ID
-        return {
-            ...credential.credential,
-            id: credential.credentialId,
-            status: credential.status,
-        };
+        const cred = await credentialStore.findOne({ credentialId });
+        if (!cred) throw new Error('Credential not found');
+        return { ...cred.credential, id: cred.credentialId, status: cred.status };
     } catch (error) {
         throw new Error(`Failed to get credential: ${error.message}`);
     }
 };
 
+const mapCred = (cred) => ({
+    ...cred.credential,
+    id: cred.credentialId,
+    status: cred.status,
+    type: cred.type,
+});
+
 const getCredentialsByHolder = async (holderDID) => {
     try {
-        const credentials = await CredentialModel.find({ holder: holderDID });
-        // Map to include ID and proper structure
-        return credentials.map(cred => ({
+        if (isDbConnected()) {
+            const list = await CredentialModel.find({ holder: holderDID });
+            return list.map(mapCred);
+        }
+        const list = await credentialStore.find({ holder: holderDID });
+        return list.map(mapCred);
+    } catch (error) {
+        throw new Error(`Failed to get credentials: ${error.message}`);
+    }
+};
+
+const getCredentialsByIssuer = async (issuerDID) => {
+    try {
+        if (isDbConnected()) {
+            const list = await CredentialModel.find({ issuer: issuerDID });
+            return list.map((cred) => ({
+                ...cred.credential,
+                id: cred.credentialId,
+                status: cred.status,
+                type: cred.type,
+                holder: cred.holder,
+                credentialSubject: cred.credentialSubject,
+                issuanceDate: cred.issuanceDate,
+            }));
+        }
+        const list = await credentialStore.find({ issuer: issuerDID });
+        return list.map((cred) => ({
             ...cred.credential,
             id: cred.credentialId,
             status: cred.status,
             type: cred.type,
+            holder: cred.holder,
+            credentialSubject: cred.credentialSubject,
+            issuanceDate: cred.issuanceDate,
         }));
     } catch (error) {
         throw new Error(`Failed to get credentials: ${error.message}`);
@@ -86,4 +128,5 @@ module.exports = {
     issueCredential,
     getCredential,
     getCredentialsByHolder,
+    getCredentialsByIssuer,
 };

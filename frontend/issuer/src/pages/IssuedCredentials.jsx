@@ -93,6 +93,12 @@ const IssuedCredentials = () => {
           </div>
           <div className="flex space-x-4">
             <button
+              onClick={() => navigate('/debug')}
+              className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+            >
+              Debug Flow
+            </button>
+            <button
               onClick={() => navigate('/issue')}
               className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
             >

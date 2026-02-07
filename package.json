@@ -9,6 +9,7 @@
     "dev:wallet": "cd frontend/wallet && npm run dev",
     "dev:issuer": "cd frontend/issuer && npm run dev",
     "dev:verifier": "cd frontend/verifier && npm run dev",
+    "dev:app": "cd frontend/app && npm run dev",
     "dev:blockchain": "cd blockchain && npx hardhat node",
     "build:backend": "cd backend && npm install",
     "build:frontend": "cd frontend/wallet && npm run build && cd ../issuer && npm run build && cd ../verifier && npm run build",

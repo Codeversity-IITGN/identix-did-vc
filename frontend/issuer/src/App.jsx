@@ -3,6 +3,7 @@ import Login from './pages/Login'
 import IssueCredential from './pages/IssueCredential'
 import IssuedCredentials from './pages/IssuedCredentials'
 import RevokeCredential from './pages/RevokeCredential'
+import Debug from './pages/Debug'
 import { WalletProvider } from './context/WalletContext'
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
           <Route path="/issue" element={<IssueCredential />} />
           <Route path="/credentials" element={<IssuedCredentials />} />
           <Route path="/revoke" element={<RevokeCredential />} />
+          <Route path="/debug" element={<Debug />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

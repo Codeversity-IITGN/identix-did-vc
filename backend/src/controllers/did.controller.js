@@ -42,8 +42,24 @@ const deleteDID = async (req, res, next) => {
     }
 };
 
+const recoverDID = async (req, res, next) => {
+    try {
+        const { seedPhrase } = req.body || {};
+        if (!seedPhrase) {
+            return res.status(400).json({
+                error: { message: 'seedPhrase is required', status: 400 },
+            });
+        }
+        const data = didService.recoverDID(seedPhrase);
+        res.status(200).json({ success: true, data });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createDID,
+    recoverDID,
     resolveDID,
     updateDID,
     deleteDID,

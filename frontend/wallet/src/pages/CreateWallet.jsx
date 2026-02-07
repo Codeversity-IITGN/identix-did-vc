@@ -17,12 +17,21 @@ const CreateWallet = () => {
     setError(null)
     setStep(1)
     try {
+      // Force a slight delay to show loading state for better UX
+      await new Promise(r => setTimeout(r, 800))
+
       const result = await createDID()
+
+      if (!result || !result.did) {
+        throw new Error('Failed to generate DID')
+      }
+
       setDid(result.did)
       setSeedPhrase(result.seedPhrase)
       setStep(2)
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Failed to create wallet')
+      console.error('Wallet creation error:', err)
+      setError(err.response?.data?.error?.message || err.message || 'Failed to create wallet. Please try again.')
       setStep(1)
     }
   }
