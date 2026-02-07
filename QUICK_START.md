@@ -1,4 +1,32 @@
-# Quick Start Guide - Frontend Apps
+# Quick Start Guide - IdentiX
+
+## Coordinated flow (all three sites + backend)
+
+For **full coordination** (Issuer, Wallet, Verifier working together), start the **backend first**, then the three frontends. All frontends proxy `/api` to the backend.
+
+```bash
+# Terminal 1 - Backend (required for coordination)
+cd backend
+npm install
+npm run dev
+
+# Terminal 2 - Wallet (http://localhost:3001)
+cd frontend/wallet && npm run dev
+
+# Terminal 3 - Issuer (http://localhost:3002)
+cd frontend/issuer && npm run dev
+
+# Terminal 4 - Verifier (http://localhost:3003)
+cd frontend/verifier && npm run dev
+```
+
+- **Wallet**: Create or recover wallet → get DID from backend → credentials are stored on backend.
+- **Issuer**: Issue credentials → stored on backend under holder DID.
+- **Verifier**: Verify credential → backend checks signature and revocation.
+
+The backend runs **without MongoDB** (uses in-memory store) if MongoDB is not available.
+
+---
 
 ## Fix Missing Dependencies
 

@@ -10,8 +10,9 @@ const connectDB = async () => {
         });
         console.log('✅ MongoDB connected successfully');
     } catch (error) {
-        console.error('❌ MongoDB connection error:', error);
-        process.exit(1);
+        console.warn('⚠️ MongoDB connection failed, using in-memory storage:', error.message);
+        // Don't exit, just continue with in-memory storage for demo
+        // In production, you'd want to handle this differently
     }
 };
 
@@ -23,4 +24,7 @@ mongoose.connection.on('error', (err) => {
     console.error('MongoDB error:', err);
 });
 
+const isDbConnected = () => mongoose.connection.readyState === 1;
+
 module.exports = connectDB;
+module.exports.isDbConnected = isDbConnected;

@@ -11,12 +11,6 @@ const blockchainRoutes = require('./routes/blockchain.routes');
 
 const app = express();
 
-// Initialize database and Veramo
-(async () => {
-    await connectDB();
-    await initVeramo();
-})();
-
 // Middleware - CORS for all frontend origins (Wallet, Issuer, Verifier)
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
@@ -34,6 +28,19 @@ app.use('/api/blockchain', blockchainRoutes);
 // Health check
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// API info for frontend coordination
+app.get('/api', (req, res) => {
+  res.status(200).json({
+    name: 'IdentiX API',
+    version: '1.0',
+    endpoints: {
+      did: '/api/did',
+      credentials: '/api/credentials',
+      blockchain: '/api/blockchain',
+    },
+  });
 });
 
 // Error handling middleware
